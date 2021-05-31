@@ -2,38 +2,37 @@ import 'package:chemical/animations/bottomAnimation.dart';
 import 'package:chemical/models/range_model.dart';
 import 'package:chemical/models/tanks_model.dart';
 import 'package:chemical/tank_detail.dart';
-import 'package:chemical/tank_option.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-class Home extends StatefulWidget {
+class AdminTanks extends StatefulWidget {
   final List<RangeModel> resultList;
 
-  const Home({Key key, this.resultList}) : super(key: key);
+  const AdminTanks({Key key, this.resultList}) : super(key: key);
   @override
-  _HomeState createState() => _HomeState();
+  _AdminTanksState createState() => _AdminTanksState();
 }
 
-class _HomeState extends State<Home> {
+class _AdminTanksState extends State<AdminTanks> {
   List<TankModel> tanks = [];
 
   getTanks(){
-    Firestore.instance.collection("Tank").where("email",isEqualTo: FirebaseAuth.instance.currentUser.email).get().then((value){
+    Firestore.instance.collection("Tank").get().then((value){
       value.docs.forEach((element) {
         print(element.toString());
-         setState(() {
-           tanks.add(TankModel(
-               element.id,
-               double.parse(element["ammonia"].toString()),
-               element["date"].toString(),
-               element["email"],
-               double.parse(element["feed"].toString()),
-               double.parse(element["nitrate"].toString()),
-               double.parse(element["nitrite"].toString()),
-               double.parse(element["ph"].toString()),
-               double.parse(element["tds"].toString()),
-               double.parse(element["weight"].toString())));
-         });
+        setState(() {
+          tanks.add(TankModel(
+              element.id,
+              double.parse(element["ammonia"].toString()),
+              element["date"].toString(),
+              element["email"],
+              double.parse(element["feed"].toString()),
+              double.parse(element["nitrate"].toString()),
+              double.parse(element["nitrite"].toString()),
+              double.parse(element["ph"].toString()),
+              double.parse(element["tds"].toString()),
+              double.parse(element["weight"].toString())));
+        });
       });
     });
   }
@@ -48,10 +47,10 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text('Tanks'),
-      ),
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text('Tanks'),
+        ),
         body:Container(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -69,8 +68,7 @@ class _HomeState extends State<Home> {
                           children: [
                             GestureDetector(
                               onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => TankDetailOption(
-                                  id: tanks[index].id,
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => TankDetail(
                                   ammonia: tanks[index].ammonia,
                                   date: tanks[index].date,
                                   email: tanks[index].email,
@@ -80,8 +78,6 @@ class _HomeState extends State<Home> {
                                   ph: tanks[index].ph,
                                   tds: tanks[index].tds,
                                   weight: tanks[index].weight,
-                                  tank: 'Tank${index+1}',
-                                  isAdmin: false
                                 )));
                               },
                               child: Card(
@@ -107,7 +103,7 @@ class _HomeState extends State<Home> {
                     );
                   },
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                    crossAxisCount: 2,
                   ),
                 ),
               )

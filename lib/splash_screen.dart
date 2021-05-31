@@ -1,10 +1,11 @@
 import 'dart:async';
-
+import 'package:chemical/admin_dashboard.dart';
 import 'package:chemical/animations/bottomAnimation.dart';
-import 'package:chemical/home.dart';
 import 'package:chemical/login.dart';
+import 'package:chemical/user_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -19,11 +20,29 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Timer(
       Duration(seconds: 5),
-          (){
-            Navigator.pop(context);
-            Navigator.push(context,MaterialPageRoute(builder: (context) => Login()));
-          },
+          () => checkUser()
     );
+  }
+  Future<void> checkUser() async{
+    SharedPreferences  prefs = await SharedPreferences.getInstance();
+    var sessionEmail = prefs.getString('email');
+    var sessionRole = prefs.getString('role');
+    if(sessionEmail == null){
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+    }
+    else if(sessionRole == "User"){
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => UserScreen()));
+    }
+    else if(sessionRole == "Admin"){
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => AdminDashboard()));
+    }
+    else{
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+    }
   }
 
   @override
@@ -41,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: Text("Chemical App",style: TextStyle(color: Colors.indigo,fontWeight: FontWeight.w900,fontSize: 20),),
+                  child: Text("AS SAMMAK FARM",style: TextStyle(color: Colors.indigo,fontWeight: FontWeight.w900,fontSize: 20),),
                 ),
               ],
             ),

@@ -34,7 +34,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.getweys.chemical"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -52,3 +52,10 @@ android {
 flutter {
     source '../..'
 }
+
+dependencies {
+    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    implementation 'androidx.multidex:multidex:2.0.0'
+    implementation 'com.google.firebase:firebase-analytics'
+}
+apply plugin: 'com.google.gms.google-services'

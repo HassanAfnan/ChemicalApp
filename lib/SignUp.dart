@@ -1,7 +1,10 @@
 import 'package:chemical/animations/bottomAnimation.dart';
 import 'package:chemical/home.dart';
 import 'package:chemical/login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -10,6 +13,10 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   bool isHidden = true;
+  bool progress = false;
+  String name;
+  String email;
+  String password;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +32,7 @@ class _SignUpState extends State<SignUp> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: Text("Chemical App",style: TextStyle(color: Colors.indigo,fontWeight: FontWeight.w900,fontSize: 20),),
+                  child: Text("AS SAMMAK FARM",style: TextStyle(color: Colors.indigo,fontWeight: FontWeight.w900,fontSize: 20),),
                 ),
               ],
             ),
@@ -45,6 +52,9 @@ class _SignUpState extends State<SignUp> {
                       Radius.circular(30.0)), // set rounded corner radius
                 ),
                 child: TextField(
+                  onChanged: (value){
+                    name = value;
+                  },
                   cursorColor: Colors.indigo,
                   style: TextStyle(
                       color:Colors.indigo
@@ -76,6 +86,9 @@ class _SignUpState extends State<SignUp> {
                       Radius.circular(30.0)), // set rounded corner radius
                 ),
                 child: TextField(
+                  onChanged: (value){
+                    email = value;
+                  },
                   cursorColor: Colors.indigo,
                   style: TextStyle(
                       color:Colors.indigo
@@ -107,6 +120,9 @@ class _SignUpState extends State<SignUp> {
                       Radius.circular(30.0)), // set rounded corner radius
                 ),
                 child: TextField(
+                  onChanged: (value){
+                    password = value;
+                  },
                   cursorColor: Colors.indigo,
                   style: TextStyle(
                       color: Colors.indigo
@@ -134,12 +150,15 @@ class _SignUpState extends State<SignUp> {
             ),
           ),
           SizedBox(height: 20,),
-          WidgetAnimator(
+          progress? Padding(
+            padding: const EdgeInsets.only(left:180.0,right:180.0),
+            child: CircularProgressIndicator(backgroundColor: Colors.indigo,),
+          ) :WidgetAnimator(
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: FlatButton(
                 onPressed: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+                  signUp();
                 },
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20))
@@ -172,5 +191,56 @@ class _SignUpState extends State<SignUp> {
         ],
       ),
     );
+  }
+  void signUp() async {
+    if(name == null || email == null || password == null) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Warning"),
+            content: Text("Fields cannot be empty"),
+          )
+      );
+    }
+    else{
+      try{
+        setState(() {
+          progress = true;
+        });
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+        DocumentReference documentReference = Firestore.instance.collection("Users").document(email);
+        Map<String, dynamic> users = {
+          "Name": name,
+          "Email": email,
+          "Role": "User",
+        };
+        documentReference.setData(users).whenComplete(() {
+          print("$email created") ;
+        }).then((value) async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString('name', name);
+          prefs.setString('email', email);
+          prefs.setString('role', "User");
+        });
+        setState(() {
+          progress = false;
+        });
+        Navigator.pop(context);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
+      }catch(e){
+        setState(() {
+          progress = false;
+        });
+        print(e);
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text("Warning"),
+              content: Text("Invalid email and password"),
+            )
+        );
+      }
+    }
   }
 }
